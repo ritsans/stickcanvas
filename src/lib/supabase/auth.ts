@@ -18,7 +18,7 @@ export async function signIn(_: unknown, formData: FormData) {
   }
 
   revalidatePath("/", "layout");
-  redirect("/app");
+  redirect("/dashbord");
 }
 
 export async function signUp(_: unknown, formData: FormData) {
