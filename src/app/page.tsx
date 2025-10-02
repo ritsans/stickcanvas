@@ -20,7 +20,7 @@ export default async function ProfilesPage() {
         <div className="mt-6 space-y-3">
           <p>ログイン中：{user.email}</p>
           <Link
-            href="/dashbord"
+            href="/dashboard"
             className="inline-block rounded bg-black text-white px-4 py-2"
           >
             ダッシュボードへ
@@ -35,7 +35,7 @@ export default async function ProfilesPage() {
             ログイン
           </Link>
           <Link
-            href="/sign-up"
+            href="/signup"
             className="inline-block rounded border px-4 py-2"
           >
             新規登録
@@ -43,13 +43,14 @@ export default async function ProfilesPage() {
         </div>
       )}
 
-      {!process.env.NEXT_PUBLIC_SUPABASE_URL && (
-        <p className="mt-6 text-sm text-amber-600">
-          環境変数が未設定です。<code>.env.local</code> に
-          <code>NEXT_PUBLIC_SUPABASE_URL / NEXT_PUBLIC_SUPABASE_ANON_KEY</code>{" "}
-          を設定してください。
-        </p>
-      )}
+      {process.env.NODE_ENV === "development" &&
+        !process.env.NEXT_PUBLIC_SUPABASE_URL && (
+          <p className="mt-6 text-sm text-amber-600">
+            環境変数が未設定です。<code>.env.local</code> に
+            <code>NEXT_PUBLIC_SUPABASE_URL / NEXT_PUBLIC_SUPABASE_ANON_KEY</code>{" "}
+            を設定してください。
+          </p>
+        )}
     </main>
   );
 }

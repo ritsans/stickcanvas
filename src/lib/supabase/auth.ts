@@ -17,7 +17,7 @@ export async function signIn(_: unknown, formData: FormData) {
   }
 
   revalidatePath("/", "layout")
-  redirect("/dashbord")
+  redirect("/dashboard")
 }
 
 export async function signUp(_: unknown, formData: FormData) {
@@ -41,4 +41,34 @@ export async function signOut() {
   await supabase.auth.signOut()
   revalidatePath("/", "layout")
   redirect("/")
+}
+
+export async function requestPasswordReset(_: unknown, formData: FormData) {
+  const email = String(formData.get("email") || "")
+
+  const supabase = createClient()
+  const { error } = await supabase.auth.resetPasswordForEmail(email, {
+    redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"}/reset-password`,
+  })
+
+  if (error) {
+    return { error: error.message }
+  }
+
+  revalidatePath("/", "layout")
+  redirect("/reset-password-sent")
+}
+
+export async function resetPassword(_: unknown, formData: FormData) {
+  const password = String(formData.get("password") || "")
+
+  const supabase = createClient()
+  const { error } = await supabase.auth.updateUser({ password })
+
+  if (error) {
+    return { error: error.message }
+  }
+
+  revalidatePath("/", "layout")
+  redirect("/dashboard")
 }

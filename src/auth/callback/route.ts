@@ -27,6 +27,6 @@ export async function GET(request: Request) {
     return NextResponse.redirect(`${origin}/login?error=${encodeURIComponent(error.message)}`)
   }
 
-  // セッションが保存された状態で /app へ
-  return NextResponse.redirect(`${origin}/app`)
+  // セッションが保存された状態で /dashboard へ
+  return NextResponse.redirect(`${origin}/dashboard`)
 }
