@@ -4,7 +4,7 @@ type Props = {
   searchParams: { message?: string };
 };
 
-export default function LoginPage({ searchParams }: Props) {
+export default async function LoginPage({ searchParams }: Props) {
   return (
     <main className="mx-auto max-w-md px-4 py-12">
       <h1 className="text-2xl font-bold">ログイン</h1>
