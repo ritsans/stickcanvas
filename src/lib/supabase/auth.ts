@@ -9,7 +9,7 @@ export async function signIn(_: unknown, formData: FormData) {
   const email = String(formData.get("email") || "");
   const password = String(formData.get("password") || "");
 
-  const supabase = createClient();
+  const supabase =  createClient();
   const { error } = await supabase.auth.signInWithPassword({ email, password });
 
   if (error) {
