@@ -13,16 +13,22 @@ export default async function ProfilePage() {
     redirect("/login")
   }
 
+  const { data: usernameRow } = await supabase
+    .from("usernames")
+    .select("username")
+    .eq("id", user.id)
+    .maybeSingle()
+
   return (
     <main className="mx-auto max-w-xl space-y-6 px-6 py-12">
       <header>
         <h1 className="text-3xl font-bold">プロフィール編集</h1>
         <p className="mt-2 text-sm text-gray-600">
-          スクリーンネームとアバター画像を設定できます
+          アバター、ユーザーID、表示名、自己紹介を一括で設定できます
         </p>
       </header>
 
-      <ProfileForm user={user} />
+      <ProfileForm user={user} username={usernameRow?.username || null} />
     </main>
   )
 }
