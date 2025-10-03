@@ -72,3 +72,105 @@ export async function resetPassword(_: unknown, formData: FormData) {
   revalidatePath("/", "layout")
   redirect("/dashboard")
 }
+
+export async function updateProfile(_: unknown, formData: FormData) {
+  const screenName = String(formData.get("screenName") || "")
+
+  const supabase = createClient()
+
+  // 現在のユーザー情報を取得
+  const {
+    data: { user },
+    error: userError,
+  } = await supabase.auth.getUser()
+
+  if (userError || !user) {
+    return { error: "認証が必要です" }
+  }
+
+  // メタデータを更新
+  const { error } = await supabase.auth.updateUser({
+    data: {
+      screen_name: screenName,
+    },
+  })
+
+  if (error) {
+    return { error: error.message }
+  }
+
+  revalidatePath("/", "layout")
+  redirect("/dashboard")
+}
+
+export async function uploadAvatar(_: unknown, formData: FormData) {
+  const file = formData.get("avatar") as File
+
+  if (!file || file.size === 0) {
+    return { error: "ファイルを選択してください" }
+  }
+
+  // ファイルサイズチェック（5MB以下）
+  if (file.size > 5 * 1024 * 1024) {
+    return { error: "ファイルサイズは5MB以下にしてください" }
+  }
+
+  // ファイルタイプチェック
+  if (!file.type.startsWith("image/")) {
+    return { error: "画像ファイルを選択してください" }
+  }
+
+  const supabase = createClient()
+
+  // 現在のユーザー情報を取得
+  const {
+    data: { user },
+    error: userError,
+  } = await supabase.auth.getUser()
+
+  if (userError || !user) {
+    return { error: "認証が必要です" }
+  }
+
+  // ファイル名を生成（ユーザーID/タイムスタンプ.拡張子）
+  const fileExt = file.name.split(".").pop()
+  const fileName = `${user.id}/${Date.now()}.${fileExt}`
+
+  // 古いアバターを削除（存在する場合）
+  const oldAvatarUrl = user.user_metadata?.avatar_url
+  if (oldAvatarUrl) {
+    const oldPath = oldAvatarUrl.split("/").slice(-2).join("/")
+    await supabase.storage.from("avatars").remove([oldPath])
+  }
+
+  // 新しいアバターをアップロード
+  const { error: uploadError } = await supabase.storage
+    .from("avatars")
+    .upload(fileName, file, {
+      cacheControl: "3600",
+      upsert: false,
+    })
+
+  if (uploadError) {
+    return { error: uploadError.message }
+  }
+
+  // パブリックURLを取得
+  const {
+    data: { publicUrl },
+  } = supabase.storage.from("avatars").getPublicUrl(fileName)
+
+  // メタデータにアバターURLを保存
+  const { error: updateError } = await supabase.auth.updateUser({
+    data: {
+      avatar_url: publicUrl,
+    },
+  })
+
+  if (updateError) {
+    return { error: updateError.message }
+  }
+
+  revalidatePath("/", "layout")
+  redirect("/dashboard")
+}
