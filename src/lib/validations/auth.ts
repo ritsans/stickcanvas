@@ -4,12 +4,11 @@ import { z } from "zod"
 export const emailSchema = z
   .string()
   .min(1, "メールアドレスを入力してください")
-  .email("有効なメールアドレスを入力してください")
+  //.email(z.string().emailは非推奨になりました)
+  .pipe(z.email({ message: "有効なメールアドレスを入力してください" }))
 
 // パスワードのバリデーションルール
-export const passwordSchema = z
-  .string()
-  .min(8, "パスワードは8文字以上で入力してください")
+export const passwordSchema = z.string().min(8, "パスワードは8文字以上で入力してください")
 
 // ログインフォームのスキーマ
 export const signInSchema = z.object({
