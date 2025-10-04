@@ -3,6 +3,8 @@ import Link from "next/link"
 import Image from "next/image"
 import { createClient } from "@/lib/supabase/server"
 import { signOut } from "@/lib/supabase/auth"
+import PostForm from "./post-form"
+import PostCard from "@/components/post-card"
 
 export default async function DashbordPage() {
   const supabase = createClient()
@@ -15,8 +17,29 @@ export default async function DashbordPage() {
     redirect("/login")
   }
 
-  const displayName = user.user_metadata?.display_name || user.email
+  const screenName = user.user_metadata?.screen_name || user.email
   const avatarUrl = user.user_metadata?.avatar_url
+
+  // 自分の投稿を取得
+  const { data: posts } = await supabase
+    .from("posts")
+    .select("*")
+    .eq("user_id", user.id)
+    .order("created_at", { ascending: false })
+
+  // ユーザー情報を取得
+  const { data: userInfo } = await supabase
+    .from("usernames")
+    .select("user_id")
+    .eq("id", user.id)
+    .maybeSingle()
+
+  const authorData = {
+    screen_name: user.user_metadata?.screen_name || null,
+    avatar_url: user.user_metadata?.avatar_url || null,
+    user_id: userInfo?.user_id || null,
+    email: user.email || "",
+  }
 
   return (
     <main className="mx-auto max-w-xl space-y-6 px-6 py-12">
@@ -41,7 +64,7 @@ export default async function DashbordPage() {
 
           <div>
             <h1 className="text-3xl font-bold">ダッシュボード</h1>
-            <p className="mt-1 text-sm text-gray-600">ようこそ、{displayName}さん</p>
+            <p className="mt-1 text-sm text-gray-600">ようこそ、{screenName}さん</p>
           </div>
         </div>
 
@@ -61,6 +84,25 @@ export default async function DashbordPage() {
           ログアウト
         </button>
       </form>
+
+      {/* 投稿フォーム */}
+      <PostForm />
+
+      {/* 投稿一覧 */}
+      <section className="space-y-6">
+        <h2 className="text-xl font-bold">あなたの投稿</h2>
+        {posts && posts.length > 0 ? (
+          <div className="space-y-6">
+            {posts.map((post) => (
+              <PostCard key={post.id} post={post} author={authorData} />
+            ))}
+          </div>
+        ) : (
+          <div className="rounded-lg border border-gray-200 bg-gray-50 p-8 text-center">
+            <p className="text-sm text-gray-500">まだ投稿がありません</p>
+          </div>
+        )}
+      </section>
     </main>
   )
 }

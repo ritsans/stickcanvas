@@ -38,17 +38,27 @@ src/
 │   ├── signup/               # サインアップページ + フォームコンポーネント
 │   ├── check-email/          # メール確認ページ
 │   ├── dashboard/            # ダッシュボード（認証後）
+│   │   ├── page.tsx         # 投稿一覧・投稿フォーム表示
+│   │   └── post-form.tsx    # 投稿フォームコンポーネント
+│   ├── profile/              # プロフィール編集ページ + フォーム
+│   ├── [username]/           # ユーザープロフィール公開ページ（動的ルート）
 │   ├── forgot-password/      # パスワードリセット申請ページ + フォーム
 │   ├── reset-password/       # 新パスワード設定ページ + フォーム
 │   ├── reset-password-sent/  # リセットメール送信完了ページ
 │   └── page.tsx              # ホームページ
 ├── auth/
 │   └── callback/             # Supabase認証コールバック処理
+├── components/
+│   └── post-card.tsx         # 投稿表示コンポーネント
 └── lib/
-    └── supabase/
-        ├── client.ts         # ブラウザ用Supabaseクライアント
-        ├── server.ts         # サーバー用Supabaseクライアント (SSR対応)
-        └── auth.ts           # 認証関連のServer Actions
+    ├── supabase/
+    │   ├── client.ts         # ブラウザ用Supabaseクライアント
+    │   ├── server.ts         # サーバー用Supabaseクライアント (SSR対応)
+    │   ├── auth.ts           # 認証関連のServer Actions
+    │   └── posts.ts          # 投稿関連のServer Actions
+    └── validations/
+        ├── auth.ts           # Zod検証スキーマ（認証フォーム用）
+        └── post.ts           # Zod検証スキーマ（投稿フォーム用）
 ```
 
 ### Authentication Flow
@@ -64,6 +74,9 @@ src/
    - `signOut()` - サインアウト → `/`にリダイレクト
    - `requestPasswordReset()` - パスワードリセットメール送信 → `/reset-password-sent`にリダイレクト
    - `resetPassword()` - 新しいパスワードで更新 → `/dashboard`にリダイレクト
+   - `updateAllProfile()` - プロフィール一括更新（アバター、ユーザーID、表示名、自己紹介） → `/profile`にリダイレクト
+   - `updateUsername()` - ユーザーID更新（重複チェック付き） → `/profile`にリダイレクト
+   - `uploadAvatar()` - アバター画像アップロード（5MB以下、古い画像は自動削除） → `/dashboard`にリダイレクト
    - すべてServer Actionsとして実装（`"use server"`）
 
 3. **コールバック処理** (`src/auth/callback/route.ts`)
@@ -77,6 +90,23 @@ src/
    - `/reset-password-sent` - 送信完了通知
    - メール内リンクをクリック → `/reset-password`
    - 新しいパスワードを設定 → `/dashboard`
+
+5. **プロフィール機能**
+   - `/profile` - プロフィール編集（認証必須）
+   - アバター画像アップロード（5MB制限、画像形式のみ）
+   - ユーザーID設定（3〜20文字、半角英数字+アンダースコア、重複チェック）
+   - 表示名・自己紹介の編集
+   - `usernames`テーブルと`user_metadata`の同期更新
+   - `/[username]` - ユーザープロフィール公開ページ（動的ルート、ユーザーID基準）
+
+6. **投稿機能** (`src/lib/supabase/posts.ts`)
+   - `createPost()` - 投稿作成（画像＋キャプションまたはテキストのみ）
+     - 画像バリデーション（5MB以下、画像形式のみ）
+     - `post-images`バケットにアップロード
+     - 画像がない場合は`/placeholder.png`を表示
+     - `/dashboard`にリダイレクト
+   - `deletePost()` - 投稿削除（所有者のみ可能）
+     - 画像も`post-images`バケットから削除
 
 ### Environment Variables
 
@@ -97,6 +127,24 @@ src/
    - 開発: `http://localhost:3000/reset-password`
    - 本番: `https://yourdomain.com/reset-password`
    - これらのURLを許可リストに追加すること
+
+3. **Storage → avatars バケット**
+   - ユーザーアバター画像の保存先
+   - パス構造: `{user_id}/{timestamp}.{ext}`
+   - 古い画像は自動削除される仕組み
+
+4. **Storage → post-images バケット**
+   - 投稿画像の保存先
+   - パス構造: `{user_id}/{post_id}/{timestamp}.{ext}`
+
+5. **Database → usernames テーブル**
+   - スキーマ: `id` (uuid, pk), `user_id` (text, unique), `email`, `display_name`, `avatar_url`, `biography`
+   - ユーザーIDの重複チェックとプロフィール情報の同期に使用
+
+6. **Database → posts テーブル**
+   - スキーマ: `id` (uuid, pk), `user_id` (uuid, fk), `caption` (text), `image_url` (text), `has_image` (boolean), `created_at`, `updated_at`
+   - RLSポリシー: 自分の投稿は全操作可能、全ユーザーが閲覧可能
+   - マイグレーションファイル: `supabase/migrations/create_posts_table.sql`
 
 ### TypeScript Configuration
 
@@ -125,3 +173,23 @@ src/
    - Client Component → `@/lib/supabase/client`
    - Server Component/API → `@/lib/supabase/server`
    - 毎回新しいクライアントインスタンスを作成（特にサーバー側）
+
+3. **バリデーション**
+   - Zodスキーマで入力検証
+   - 認証フォーム（`src/lib/validations/auth.ts`）
+     - メールアドレス: `.pipe(z.email())`でチェーン検証
+     - パスワード: 8文字以上
+     - ユーザーID: 3〜20文字、半角英数字+アンダースコア（`/^[a-z0-9_]{3,20}$/`）
+   - 投稿フォーム（`src/lib/validations/post.ts`）
+     - キャプション: 最大2000文字
+
+4. **画像アップロード**
+   - FormDataから`File`オブジェクト取得
+   - サイズ・形式チェック後、Supabase Storageにアップロード
+   - 古いファイルは`remove()`で削除してから新規アップロード
+   - パブリックURLを取得して`user_metadata`に保存
+
+5. **データ同期**
+   - ユーザープロフィール情報は`auth.users.user_metadata`と`usernames`テーブル両方に保存
+   - `updateAllProfile()`で一括更新、両者を同期
+   - ユーザーID変更時は旧URLと新URLの両方で`revalidatePath()`を実行
