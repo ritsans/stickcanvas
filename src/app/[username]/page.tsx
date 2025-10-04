@@ -7,21 +7,21 @@ type PageProps = {
 }
 
 export default async function UserProfilePage({ params }: PageProps) {
-  const { username } = params
+  const { username: userId } = params
   const supabase = createClient()
 
   // ユーザー名とプロフィール情報を取得
   const { data: profileData } = await supabase
     .from("usernames")
-    .select("id, username, screen_name, avatar_url, biography, email")
-    .eq("username", username)
+    .select("id, user_id, display_name, avatar_url, biography, email")
+    .eq("user_id", userId)
     .single()
 
   if (!profileData) {
     notFound()
   }
 
-  const screenName = profileData.screen_name || profileData.email || "ユーザー"
+  const displayName = profileData.display_name || profileData.email || "ユーザー"
   const avatarUrl = profileData.avatar_url
   const biography = profileData.biography
 
@@ -32,7 +32,7 @@ export default async function UserProfilePage({ params }: PageProps) {
         {/* アバター画像 */}
         <div className="relative h-24 w-24 flex-shrink-0 overflow-hidden rounded-full bg-gray-200">
           {avatarUrl ? (
-            <Image src={avatarUrl} alt={screenName} fill className="object-cover" />
+            <Image src={avatarUrl} alt={displayName} fill className="object-cover" />
           ) : (
             <div className="flex h-full w-full items-center justify-center text-gray-400">
               <svg className="h-12 w-12" fill="currentColor" viewBox="0 0 20 20">
@@ -47,8 +47,8 @@ export default async function UserProfilePage({ params }: PageProps) {
         </div>
 
         <div className="flex-1">
-          <h1 className="text-3xl font-bold">{screenName}</h1>
-          <p className="mt-1 text-sm text-gray-600">@{username}</p>
+          <h1 className="text-3xl font-bold">{displayName}</h1>
+          <p className="mt-1 text-sm text-gray-600">@{userId}</p>
         </div>
       </div>
 

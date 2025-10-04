@@ -15,7 +15,7 @@ export default async function DashbordPage() {
     redirect("/login")
   }
 
-  const screenName = user.user_metadata?.screen_name || user.email
+  const displayName = user.user_metadata?.display_name || user.email
   const avatarUrl = user.user_metadata?.avatar_url
 
   return (
@@ -41,7 +41,7 @@ export default async function DashbordPage() {
 
           <div>
             <h1 className="text-3xl font-bold">ダッシュボード</h1>
-            <p className="mt-1 text-sm text-gray-600">ようこそ、{screenName}さん</p>
+            <p className="mt-1 text-sm text-gray-600">ようこそ、{displayName}さん</p>
           </div>
         </div>
 

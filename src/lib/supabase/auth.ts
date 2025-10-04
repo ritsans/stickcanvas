@@ -74,7 +74,7 @@ export async function resetPassword(_: unknown, formData: FormData) {
 }
 
 export async function updateProfile(_: unknown, formData: FormData) {
-  const screenName = String(formData.get("screenName") || "")
+  const displayName = String(formData.get("displayName") || "")
   const biography = String(formData.get("biography") || "")
 
   const supabase = createClient()
@@ -92,7 +92,7 @@ export async function updateProfile(_: unknown, formData: FormData) {
   // メタデータを更新
   const { error } = await supabase.auth.updateUser({
     data: {
-      screen_name: screenName,
+      display_name: displayName,
       biography,
     },
   })
@@ -105,7 +105,7 @@ export async function updateProfile(_: unknown, formData: FormData) {
   await supabase
     .from("usernames")
     .update({
-      screen_name: screenName,
+      display_name: displayName,
       biography,
     })
     .eq("id", user.id)
@@ -115,10 +115,10 @@ export async function updateProfile(_: unknown, formData: FormData) {
 }
 
 export async function updateAllProfile(_: unknown, formData: FormData) {
-  const screenName = String(formData.get("screenName") || "")
+  const displayName = String(formData.get("displayName") || "")
   const biography = String(formData.get("biography") || "")
-  const rawUsername = String(formData.get("username") || "")
-  const username = rawUsername.trim().toLowerCase()
+  const rawUserId = String(formData.get("userId") || "")
+  const userId = rawUserId.trim().toLowerCase()
   const avatarFile = formData.get("avatar") as File
 
   const supabase = createClient()
@@ -134,12 +134,12 @@ export async function updateAllProfile(_: unknown, formData: FormData) {
   }
 
   // ユーザーID検証
-  if (username && !/^[a-z0-9_]{3,20}$/.test(username)) {
+  if (userId && !/^[a-z0-9_]{3,20}$/.test(userId)) {
     return { error: "ユーザーIDは3〜20文字の半角英数字とアンダースコアのみ利用できます" }
   }
 
   let avatarUrl = user.user_metadata?.avatar_url || ""
-  let previousUsername = null
+  let previousUserId = null
 
   // アバター画像処理
   if (avatarFile && avatarFile.size > 0) {
@@ -184,21 +184,21 @@ export async function updateAllProfile(_: unknown, formData: FormData) {
   }
 
   // ユーザーID処理
-  if (username) {
+  if (userId) {
     const { data: currentEntry } = await supabase
       .from("usernames")
-      .select("id, username")
+      .select("id, user_id")
       .eq("id", user.id)
       .maybeSingle()
 
-    previousUsername = currentEntry?.username || null
+    previousUserId = currentEntry?.user_id || null
 
-    if (previousUsername !== username) {
+    if (previousUserId !== userId) {
       // 重複チェック
       const { data: takenRecord, error: takenError } = await supabase
         .from("usernames")
         .select("id")
-        .eq("username", username)
+        .eq("user_id", userId)
         .maybeSingle()
 
       if (takenError) {
@@ -214,10 +214,10 @@ export async function updateAllProfile(_: unknown, formData: FormData) {
   // メタデータを更新
   const { error: metadataError } = await supabase.auth.updateUser({
     data: {
-      screen_name: screenName,
+      display_name: displayName,
       biography,
       avatar_url: avatarUrl,
-      username: username || user.user_metadata?.username,
+      user_id: userId || user.user_metadata?.user_id,
     },
   })
 
@@ -226,12 +226,12 @@ export async function updateAllProfile(_: unknown, formData: FormData) {
   }
 
   // usernamesテーブルを更新
-  if (username) {
+  if (userId) {
     const { error: upsertError } = await supabase.from("usernames").upsert({
       id: user.id,
-      username,
+      user_id: userId,
       email: user.email,
-      screen_name: screenName,
+      display_name: displayName,
       avatar_url: avatarUrl,
       biography,
     })
@@ -244,7 +244,7 @@ export async function updateAllProfile(_: unknown, formData: FormData) {
     await supabase
       .from("usernames")
       .update({
-        screen_name: screenName,
+        display_name: displayName,
         avatar_url: avatarUrl,
         biography,
       })
@@ -252,11 +252,11 @@ export async function updateAllProfile(_: unknown, formData: FormData) {
   }
 
   // キャッシュ無効化
-  if (previousUsername && previousUsername !== username) {
-    revalidatePath(`/${previousUsername}`)
+  if (previousUserId && previousUserId !== userId) {
+    revalidatePath(`/${previousUserId}`)
   }
-  if (username) {
-    revalidatePath(`/${username}`)
+  if (userId) {
+    revalidatePath(`/${userId}`)
   }
   revalidatePath("/profile")
   revalidatePath("/dashboard")
@@ -346,14 +346,14 @@ export async function uploadAvatar(_: unknown, formData: FormData) {
 }
 
 export async function updateUsername(_: unknown, formData: FormData) {
-  const rawInput = String(formData.get("username") || "")
-  const username = rawInput.trim().toLowerCase()
+  const rawInput = String(formData.get("userId") || "")
+  const userId = rawInput.trim().toLowerCase()
 
-  if (!username) {
+  if (!userId) {
     return { error: "ユーザーIDを入力してください" }
   }
 
-  if (!/^[a-z0-9_]{3,20}$/.test(username)) {
+  if (!/^[a-z0-9_]{3,20}$/.test(userId)) {
     return { error: "ユーザーIDは3〜20文字の半角英数字とアンダースコアのみ利用できます" }
   }
 
@@ -370,7 +370,7 @@ export async function updateUsername(_: unknown, formData: FormData) {
 
   const { data: currentEntry, error: currentError } = await supabase
     .from("usernames")
-    .select("id, username")
+    .select("id, user_id")
     .eq("id", user.id)
     .maybeSingle()
 
@@ -378,19 +378,19 @@ export async function updateUsername(_: unknown, formData: FormData) {
     return { error: currentError.message }
   }
 
-  const previousUsername = currentEntry?.username || null
+  const previousUserId = currentEntry?.user_id || null
 
-  if (previousUsername === username) {
+  if (previousUserId === userId) {
     revalidatePath("/profile")
     revalidatePath("/dashboard")
-    revalidatePath(`/${username}`)
+    revalidatePath(`/${userId}`)
     redirect("/profile")
   }
 
   const { data: takenRecord, error: takenError } = await supabase
     .from("usernames")
     .select("id")
-    .eq("username", username)
+    .eq("user_id", userId)
     .maybeSingle()
 
   if (takenError) {
@@ -405,9 +405,9 @@ export async function updateUsername(_: unknown, formData: FormData) {
     .from("usernames")
     .upsert({
       id: user.id,
-      username,
+      user_id: userId,
       email: user.email,
-      screen_name: user.user_metadata?.screen_name || null,
+      display_name: user.user_metadata?.display_name || null,
       avatar_url: user.user_metadata?.avatar_url || null,
       biography: user.user_metadata?.biography || null,
     })
@@ -418,7 +418,7 @@ export async function updateUsername(_: unknown, formData: FormData) {
 
   const { error: metadataError } = await supabase.auth.updateUser({
     data: {
-      username,
+      user_id: userId,
     },
   })
 
@@ -426,14 +426,14 @@ export async function updateUsername(_: unknown, formData: FormData) {
     return { error: metadataError.message }
   }
 
-  if (previousUsername && previousUsername !== username) {
-    revalidatePath(`/${previousUsername}`)
+  if (previousUserId && previousUserId !== userId) {
+    revalidatePath(`/${previousUserId}`)
   }
 
   revalidatePath("/profile")
   revalidatePath("/dashboard")
   revalidatePath("/", "layout")
-  revalidatePath(`/${username}`)
+  revalidatePath(`/${userId}`)
 
   redirect("/profile")
 }

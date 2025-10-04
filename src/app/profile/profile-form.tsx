@@ -5,15 +5,15 @@ import { updateAllProfile } from "@/lib/supabase/auth"
 import type { User } from "@supabase/supabase-js"
 import Image from "next/image"
 
-export default function ProfileForm({ user, username }: { user: User; username: string | null }) {
+export default function ProfileForm({ user, userId }: { user: User; userId: string | null }) {
   const [formState, formAction, formPending] = useActionState(updateAllProfile, null)
   const [previewUrl, setPreviewUrl] = useState<string | null>(null)
 
-  const currentScreenName = user.user_metadata?.screen_name || ""
+  const currentDisplayName = user.user_metadata?.display_name || ""
   const currentBiography = user.user_metadata?.biography || ""
   const currentAvatarUrl = user.user_metadata?.avatar_url || ""
-  const currentUsername = username || ""
-  const hasUsername = Boolean(currentUsername)
+  const currentUserId = userId || ""
+  const hasUserId = Boolean(currentUserId)
   const shareBaseUrl = (process.env.NEXT_PUBLIC_SITE_URL || "").replace(/\/$/, "")
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -82,7 +82,7 @@ export default function ProfileForm({ user, username }: { user: User; username: 
         </p>
 
         <div>
-          <label htmlFor="username" className="block text-sm font-medium">
+          <label htmlFor="userId" className="block text-sm font-medium">
             ユーザーID
           </label>
           <div className="mt-1 flex">
@@ -91,9 +91,9 @@ export default function ProfileForm({ user, username }: { user: User; username: 
             </span>
             <input
               type="text"
-              id="username"
-              name="username"
-              defaultValue={currentUsername}
+              id="userId"
+              name="userId"
+              defaultValue={currentUserId}
               pattern="[a-z0-9_]{3,20}"
               title="3〜20文字の半角英数字とアンダースコアのみ利用できます"
               className="flex-1 rounded-r border border-l-0 border-gray-300 px-3 py-2"
@@ -103,12 +103,12 @@ export default function ProfileForm({ user, username }: { user: User; username: 
           </div>
         </div>
 
-        {hasUsername && (
+        {hasUserId && (
           <p className="mt-2 text-xs text-gray-500">
             公開URL：
             {shareBaseUrl
-              ? `${shareBaseUrl}/${currentUsername}`
-              : `https://stickcanvas.com/${currentUsername}`}
+              ? `${shareBaseUrl}/${currentUserId}`
+              : `https://stickcanvas.com/${currentUserId}`}
           </p>
         )}
       </section>
@@ -119,14 +119,14 @@ export default function ProfileForm({ user, username }: { user: User; username: 
 
         <div className="space-y-4">
           <div>
-            <label htmlFor="screenName" className="block text-sm font-medium">
+            <label htmlFor="displayName" className="block text-sm font-medium">
               表示名
             </label>
             <input
               type="text"
-              id="screenName"
-              name="screenName"
-              defaultValue={currentScreenName}
+              id="displayName"
+              name="displayName"
+              defaultValue={currentDisplayName}
               className="mt-1 block w-full rounded border border-gray-300 px-3 py-2"
               placeholder="山田太郎"
             />

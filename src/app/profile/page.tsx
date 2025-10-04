@@ -13,9 +13,9 @@ export default async function ProfilePage() {
     redirect("/login")
   }
 
-  const { data: usernameRow } = await supabase
+  const { data: userRow } = await supabase
     .from("usernames")
-    .select("username")
+    .select("user_id")
     .eq("id", user.id)
     .maybeSingle()
 
@@ -28,7 +28,7 @@ export default async function ProfilePage() {
         </p>
       </header>
 
-      <ProfileForm user={user} username={usernameRow?.username || null} />
+      <ProfileForm user={user} userId={userRow?.user_id || null} />
     </main>
   )
 }

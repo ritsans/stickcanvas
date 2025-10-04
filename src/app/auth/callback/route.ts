@@ -4,13 +4,13 @@ import { createServerClient } from "@supabase/ssr"
 import { cookies } from "next/headers"
 
 // 8文字のランダムなユーザーIDを生成
-function generateRandomUsername(): string {
+function generateRandomUserId(): string {
   const chars = "abcdefghijklmnopqrstuvwxyz0123456789"
-  let username = ""
+  let userId = ""
   for (let i = 0; i < 8; i++) {
-    username += chars.charAt(Math.floor(Math.random() * chars.length))
+    userId += chars.charAt(Math.floor(Math.random() * chars.length))
   }
-  return username
+  return userId
 }
 
 export async function GET(request: Request) {
@@ -66,46 +66,46 @@ export async function GET(request: Request) {
   } = await supabase.auth.getUser()
 
   if (user) {
-    const { data: existingUsername } = await supabase
+    const { data: existingUserId } = await supabase
       .from("usernames")
-      .select("username")
+      .select("user_id")
       .eq("id", user.id)
       .maybeSingle()
 
-    if (!existingUsername) {
+    if (!existingUserId) {
       // ユニークなユーザーIDを生成
-      let username = generateRandomUsername()
+      let userId = generateRandomUserId()
       let attempts = 0
       const maxAttempts = 10
 
       while (attempts < maxAttempts) {
-        const { data: takenUsername } = await supabase
+        const { data: takenUserId } = await supabase
           .from("usernames")
           .select("id")
-          .eq("username", username)
+          .eq("user_id", userId)
           .maybeSingle()
 
-        if (!takenUsername) break
+        if (!takenUserId) break
 
-        username = generateRandomUsername()
+        userId = generateRandomUserId()
         attempts++
       }
 
       // 10回試してもユニークなIDが見つからない場合はタイムスタンプを追加
       if (attempts >= maxAttempts) {
-        username = `user${Date.now().toString(36)}`
+        userId = `user${Date.now().toString(36)}`
       }
 
       // usernamesテーブルに登録
       await supabase.from("usernames").insert({
         id: user.id,
-        username,
+        user_id: userId,
         email: user.email,
       })
 
       // メタデータにも保存
       await supabase.auth.updateUser({
-        data: { username },
+        data: { user_id: userId },
       })
     }
   }
