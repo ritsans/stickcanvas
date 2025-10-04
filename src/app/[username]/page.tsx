@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation"
 import Image from "next/image"
 import { createClient } from "@/lib/supabase/server"
+import PostCard from "@/components/post-card"
 
 type PageProps = {
   params: { username: string }
@@ -24,6 +25,20 @@ export default async function UserProfilePage({ params }: PageProps) {
   const screenName = profileData.screen_name || profileData.email || "ユーザー"
   const avatarUrl = profileData.avatar_url
   const biography = profileData.biography
+
+  // このユーザーの投稿を取得
+  const { data: posts } = await supabase
+    .from("posts")
+    .select("*")
+    .eq("user_id", profileData.id)
+    .order("created_at", { ascending: false })
+
+  const authorData = {
+    screen_name: profileData.screen_name,
+    avatar_url: profileData.avatar_url,
+    user_id: profileData.user_id,
+    email: profileData.email,
+  }
 
   return (
     <main className="mx-auto max-w-2xl space-y-6 px-6 py-12">
@@ -66,11 +81,20 @@ export default async function UserProfilePage({ params }: PageProps) {
         </section>
       )}
 
-      {/* 今後追加予定のコンテンツエリア */}
-      <section className="rounded-lg border border-gray-200 p-6">
-        <p className="text-center text-sm text-gray-500">
-          作品やアクティビティはまだありません
-        </p>
+      {/* 投稿一覧 */}
+      <section className="space-y-6">
+        <h2 className="text-xl font-bold">投稿</h2>
+        {posts && posts.length > 0 ? (
+          <div className="space-y-6">
+            {posts.map((post) => (
+              <PostCard key={post.id} post={post} author={authorData} />
+            ))}
+          </div>
+        ) : (
+          <div className="rounded-lg border border-gray-200 bg-gray-50 p-8 text-center">
+            <p className="text-sm text-gray-500">まだ投稿がありません</p>
+          </div>
+        )}
       </section>
     </main>
   )
