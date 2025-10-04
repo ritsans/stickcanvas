@@ -38,14 +38,14 @@ src/
 │   ├── signup/               # サインアップページ + フォームコンポーネント
 │   ├── check-email/          # メール確認ページ
 │   ├── dashboard/            # ダッシュボード（認証後）
-│   │   ├── page.tsx         # 投稿一覧・投稿フォーム表示
+│   │   ├── page.tsx         # 自分の投稿一覧・投稿フォーム表示
 │   │   └── post-form.tsx    # 投稿フォームコンポーネント
 │   ├── profile/              # プロフィール編集ページ + フォーム
 │   ├── [username]/           # ユーザープロフィール公開ページ（動的ルート）
 │   ├── forgot-password/      # パスワードリセット申請ページ + フォーム
 │   ├── reset-password/       # 新パスワード設定ページ + フォーム
 │   ├── reset-password-sent/  # リセットメール送信完了ページ
-│   └── page.tsx              # ホームページ
+│   └── page.tsx              # ホームページ（全ユーザーの投稿タイムライン）
 ├── auth/
 │   └── callback/             # Supabase認証コールバック処理
 ├── components/
@@ -107,6 +107,16 @@ src/
      - `/dashboard`にリダイレクト
    - `deletePost()` - 投稿削除（所有者のみ可能）
      - 画像も`post-images`バケットから削除
+   - `getAllPosts()` - 全ユーザーの投稿取得（タイムライン用）
+     - `posts`テーブルから全投稿を新しい順で取得
+     - `usernames`テーブルから投稿者情報を取得（`auth_user_id`で紐付け）
+     - 投稿とユーザー情報をマッピングして返却
+
+7. **タイムライン機能**
+   - `/`（ホームページ）で全ユーザーの投稿を時系列表示
+   - ログイン/未ログインどちらでも閲覧可能
+   - 各投稿にユーザー名・アバター・投稿日時を表示
+   - ユーザー名クリックで`/[username]`へ遷移
 
 ### Environment Variables
 
@@ -138,8 +148,13 @@ src/
    - パス構造: `{user_id}/{post_id}/{timestamp}.{ext}`
 
 5. **Database → usernames テーブル**
-   - スキーマ: `id` (uuid, pk), `user_id` (text, unique), `email`, `display_name`, `avatar_url`, `biography`
+   - スキーマ:
+     - `id` (uuid, pk)
+     - `user_id` (text, unique) - プロフィールURL用のユーザー名（例: `potato`, `neko`）
+     - `auth_user_id` (uuid, unique, fk to auth.users.id) - 認証システムとの紐付け
+     - `email`, `display_name`, `avatar_url`, `biography`
    - ユーザーIDの重複チェックとプロフィール情報の同期に使用
+   - `auth_user_id`で`posts.user_id`と紐付けて投稿者情報を取得
 
 6. **Database → posts テーブル**
    - スキーマ: `id` (uuid, pk), `user_id` (uuid, fk), `caption` (text), `image_url` (text), `has_image` (boolean), `created_at`, `updated_at`
@@ -193,3 +208,9 @@ src/
    - ユーザープロフィール情報は`auth.users.user_metadata`と`usernames`テーブル両方に保存
    - `updateAllProfile()`で一括更新、両者を同期
    - ユーザーID変更時は旧URLと新URLの両方で`revalidatePath()`を実行
+
+6. **投稿とユーザー情報の紐付け**
+   - `posts.user_id` (UUID) → `auth.users.id`を参照
+   - `usernames.auth_user_id` (UUID) → `auth.users.id`を参照
+   - タイムライン表示時は`posts.user_id`と`usernames.auth_user_id`で結合
+   - `usernames.user_id` (TEXT)はプロフィールURL用（例: `/potato`）

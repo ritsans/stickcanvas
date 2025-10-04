@@ -139,3 +139,43 @@ export async function deletePost(postId: string) {
   revalidatePath("/", "layout")
   return { success: true }
 }
+
+export async function getAllPosts() {
+  const supabase = createClient()
+
+  // 全ユーザーの投稿を取得（新しい順）
+  const { data: posts, error: postsError } = await supabase
+    .from("posts")
+    .select("id, caption, image_url, has_image, created_at, user_id")
+    .order("created_at", { ascending: false })
+
+  if (postsError) {
+    console.error("投稿の取得に失敗しました:", postsError)
+    return []
+  }
+
+  if (!posts || posts.length === 0) {
+    return []
+  }
+
+  // 投稿者のユーザー情報を取得
+  const userIds = [...new Set(posts.map((p) => p.user_id))]
+  const { data: usernames, error: usernamesError } = await supabase
+    .from("usernames")
+    .select("auth_user_id, user_id, screen_name, avatar_url, email")
+    .in("auth_user_id", userIds)
+
+  if (usernamesError) {
+    console.error("ユーザー情報の取得に失敗しました:", usernamesError)
+    return []
+  }
+
+  // ユーザー情報をマッピング
+  const usernamesMap = new Map(usernames?.map((u) => [u.auth_user_id, u]) || [])
+
+  // 投稿とユーザー情報を結合
+  return posts.map((post) => ({
+    ...post,
+    usernames: usernamesMap.get(post.user_id) || null,
+  }))
+}
