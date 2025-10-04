@@ -32,7 +32,13 @@ export default async function UserProfilePage({ params }: PageProps) {
         {/* アバター画像 */}
         <div className="relative h-24 w-24 flex-shrink-0 overflow-hidden rounded-full bg-gray-200">
           {avatarUrl ? (
-            <Image src={avatarUrl} alt={screenName} fill className="object-cover" />
+            <Image
+              src={avatarUrl}
+              alt={screenName}
+              fill
+              sizes="96px"
+              className="object-cover"
+            />
           ) : (
             <div className="flex h-full w-full items-center justify-center text-gray-400">
               <svg className="h-12 w-12" fill="currentColor" viewBox="0 0 20 20">

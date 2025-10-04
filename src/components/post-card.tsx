@@ -38,7 +38,13 @@ export default function PostCard({ post, author }: PostCardProps) {
       <div className="flex items-center gap-3 border-b border-gray-200 p-4">
         <div className="relative h-10 w-10 overflow-hidden rounded-full bg-gray-200">
           {avatarUrl ? (
-            <Image src={avatarUrl} alt={screenName} fill className="object-cover" />
+            <Image
+              src={avatarUrl}
+              alt={screenName}
+              fill
+              sizes="40px"
+              className="object-cover"
+            />
           ) : (
             <div className="flex h-full w-full items-center justify-center text-gray-400">
               <svg className="h-6 w-6" fill="currentColor" viewBox="0 0 20 20">
@@ -69,6 +75,7 @@ export default function PostCard({ post, author }: PostCardProps) {
           src={imageUrl}
           alt={post.caption || "投稿画像"}
           fill
+          sizes="(max-width: 672px) 100vw, 672px"
           className="object-cover"
           priority={false}
         />

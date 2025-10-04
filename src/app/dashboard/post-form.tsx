@@ -37,7 +37,13 @@ export default function PostForm() {
       {previewUrl && (
         <div className="mb-4 relative">
           <div className="relative aspect-square w-full overflow-hidden rounded-lg bg-gray-100">
-            <Image src={previewUrl} alt="プレビュー" fill className="object-cover" />
+            <Image
+              src={previewUrl}
+              alt="プレビュー"
+              fill
+              sizes="(max-width: 672px) 100vw, 672px"
+              className="object-cover"
+            />
           </div>
           <button
             type="button"
