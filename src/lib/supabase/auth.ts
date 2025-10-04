@@ -74,7 +74,7 @@ export async function resetPassword(_: unknown, formData: FormData) {
 }
 
 export async function updateProfile(_: unknown, formData: FormData) {
-  const displayName = String(formData.get("displayName") || "")
+  const screenName = String(formData.get("screenName") || "")
   const biography = String(formData.get("biography") || "")
 
   const supabase = createClient()
@@ -92,7 +92,7 @@ export async function updateProfile(_: unknown, formData: FormData) {
   // メタデータを更新
   const { error } = await supabase.auth.updateUser({
     data: {
-      display_name: displayName,
+      screen_name: screenName,
       biography,
     },
   })
@@ -105,7 +105,7 @@ export async function updateProfile(_: unknown, formData: FormData) {
   await supabase
     .from("usernames")
     .update({
-      display_name: displayName,
+      screen_name: screenName,
       biography,
     })
     .eq("id", user.id)
@@ -115,7 +115,7 @@ export async function updateProfile(_: unknown, formData: FormData) {
 }
 
 export async function updateAllProfile(_: unknown, formData: FormData) {
-  const displayName = String(formData.get("displayName") || "")
+  const screenName = String(formData.get("screenName") || "")
   const biography = String(formData.get("biography") || "")
   const rawUserId = String(formData.get("userId") || "")
   const userId = rawUserId.trim().toLowerCase()
@@ -214,7 +214,7 @@ export async function updateAllProfile(_: unknown, formData: FormData) {
   // メタデータを更新
   const { error: metadataError } = await supabase.auth.updateUser({
     data: {
-      display_name: displayName,
+      screen_name: screenName,
       biography,
       avatar_url: avatarUrl,
       user_id: userId || user.user_metadata?.user_id,
@@ -231,7 +231,7 @@ export async function updateAllProfile(_: unknown, formData: FormData) {
       id: user.id,
       user_id: userId,
       email: user.email,
-      display_name: displayName,
+      screen_name: screenName,
       avatar_url: avatarUrl,
       biography,
     })
@@ -244,7 +244,7 @@ export async function updateAllProfile(_: unknown, formData: FormData) {
     await supabase
       .from("usernames")
       .update({
-        display_name: displayName,
+        screen_name: screenName,
         avatar_url: avatarUrl,
         biography,
       })
@@ -407,7 +407,7 @@ export async function updateUsername(_: unknown, formData: FormData) {
       id: user.id,
       user_id: userId,
       email: user.email,
-      display_name: user.user_metadata?.display_name || null,
+      screen_name: user.user_metadata?.screen_name || null,
       avatar_url: user.user_metadata?.avatar_url || null,
       biography: user.user_metadata?.biography || null,
     })

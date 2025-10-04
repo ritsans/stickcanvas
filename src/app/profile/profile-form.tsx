@@ -9,7 +9,7 @@ export default function ProfileForm({ user, userId }: { user: User; userId: stri
   const [formState, formAction, formPending] = useActionState(updateAllProfile, null)
   const [previewUrl, setPreviewUrl] = useState<string | null>(null)
 
-  const currentDisplayName = user.user_metadata?.display_name || ""
+  const currentScreenName = user.user_metadata?.screen_name || ""
   const currentBiography = user.user_metadata?.biography || ""
   const currentAvatarUrl = user.user_metadata?.avatar_url || ""
   const currentUserId = userId || ""
@@ -119,14 +119,14 @@ export default function ProfileForm({ user, userId }: { user: User; userId: stri
 
         <div className="space-y-4">
           <div>
-            <label htmlFor="displayName" className="block text-sm font-medium">
+            <label htmlFor="screenName" className="block text-sm font-medium">
               表示名
             </label>
             <input
               type="text"
-              id="displayName"
-              name="displayName"
-              defaultValue={currentDisplayName}
+              id="screenName"
+              name="screenName"
+              defaultValue={currentScreenName}
               className="mt-1 block w-full rounded border border-gray-300 px-3 py-2"
               placeholder="山田太郎"
             />

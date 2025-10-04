@@ -2,6 +2,7 @@
 import { NextResponse } from "next/server"
 import { createServerClient } from "@supabase/ssr"
 import { cookies } from "next/headers"
+import type { EmailOtpType } from "@supabase/supabase-js"
 
 // 8文字のランダムなユーザーIDを生成
 function generateRandomUserId(): string {
@@ -19,6 +20,14 @@ export async function GET(request: Request) {
   const type = searchParams.get("type")
   const code = searchParams.get("code")
 
+  const isEmailOtpType = (value: string): value is EmailOtpType =>
+    value === "signup" ||
+    value === "invite" ||
+    value === "magiclink" ||
+    value === "recovery" ||
+    value === "email_change" ||
+    value === "email"
+
   const cookieStore = await cookies()
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -34,8 +43,12 @@ export async function GET(request: Request) {
 
   // メール確認リンク（token_hash）とOAuthコールバック（code）の両方に対応
   if (token_hash && type) {
+    if (!isEmailOtpType(type)) {
+      return NextResponse.redirect(`${origin}/login?error=invalid_type`)
+    }
+
     const { error, data } = await supabase.auth.verifyOtp({
-      type: type as any,
+      type,
       token_hash,
     })
 
@@ -96,16 +109,16 @@ export async function GET(request: Request) {
         userId = `user${Date.now().toString(36)}`
       }
 
-      // usernamesテーブルに登録
+      // メタデータにまず保存（これによりauth.uid()が利用可能になる）
+      await supabase.auth.updateUser({
+        data: { user_id: userId },
+      })
+
+      // usernamesテーブルに登録（RLSポリシーがauth.uid()をチェックするため、updateUser後に実行）
       await supabase.from("usernames").insert({
         id: user.id,
         user_id: userId,
         email: user.email,
-      })
-
-      // メタデータにも保存
-      await supabase.auth.updateUser({
-        data: { user_id: userId },
       })
     }
   }
