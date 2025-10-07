@@ -4,11 +4,11 @@ import { createClient } from "@/lib/supabase/server"
 import PostCard from "@/components/post-card"
 
 type PageProps = {
-  params: { username: string }
+  params: Promise<{ username: string }>
 }
 
 export default async function UserProfilePage({ params }: PageProps) {
-  const { username: userId } = params
+  const { username: userId } = await params
   const supabase = createClient()
 
   // ユーザー名とプロフィール情報を取得
