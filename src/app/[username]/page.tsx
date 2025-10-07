@@ -3,7 +3,7 @@ import Image from "next/image"
 import { createClient } from "@/lib/supabase/server"
 import PostCard from "@/components/post-card"
 import FollowButton from "@/components/follow-button"
-import { getFollowStats, checkIsFollowing } from "@/lib/supabase/follows"
+import { getFollowStats, checkIsFollowing, checkIsMutualFollow } from "@/lib/supabase/follows"
 
 type PageProps = {
   params: Promise<{ username: string }>
@@ -41,6 +41,9 @@ export default async function UserProfilePage({ params }: PageProps) {
 
   // フォロー状態をチェック
   const initialIsFollowing = currentUser ? await checkIsFollowing(profileData.id) : false
+
+  // 相互フォロー状態をチェック
+  const initialIsMutualFollow = currentUser ? await checkIsMutualFollow(profileData.id) : false
 
   // このユーザーの投稿を取得
   const { data: posts } = await supabase
@@ -92,6 +95,7 @@ export default async function UserProfilePage({ params }: PageProps) {
             <FollowButton
               targetAuthUserId={profileData.id}
               initialIsFollowing={initialIsFollowing}
+              initialIsMutualFollow={initialIsMutualFollow}
               isOwnProfile={isOwnProfile}
               isLoggedIn={isLoggedIn}
             />

@@ -131,3 +131,36 @@ export async function checkIsFollowing(targetAuthUserId: string) {
 
   return !!data
 }
+
+/**
+ * 相互フォローかどうかをチェック
+ */
+export async function checkIsMutualFollow(targetAuthUserId: string) {
+  const supabase = createClient()
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
+  if (!user || user.id === targetAuthUserId) {
+    return false
+  }
+
+  // 自分が相手をフォローしているか
+  const { data: following } = await supabase
+    .from("follows")
+    .select("id")
+    .eq("follower_id", user.id)
+    .eq("following_id", targetAuthUserId)
+    .maybeSingle()
+
+  // 相手が自分をフォローしているか
+  const { data: follower } = await supabase
+    .from("follows")
+    .select("id")
+    .eq("follower_id", targetAuthUserId)
+    .eq("following_id", user.id)
+    .maybeSingle()
+
+  return !!following && !!follower
+}
