@@ -42,6 +42,8 @@ src/
 │   │   └── post-form.tsx    # 投稿フォームコンポーネント
 │   ├── profile/              # プロフィール編集ページ + フォーム
 │   ├── [username]/           # ユーザープロフィール公開ページ（動的ルート）
+│   ├── followings/           # フォローリスト（自分がフォローしているユーザー）
+│   ├── followers/            # フォロワーリスト（自分をフォローしているユーザー）
 │   ├── forgot-password/      # パスワードリセット申請ページ + フォーム
 │   ├── reset-password/       # 新パスワード設定ページ + フォーム
 │   ├── reset-password-sent/  # リセットメール送信完了ページ
@@ -127,15 +129,22 @@ src/
    - `checkIsFollowing()` - フォロー状態確認
    - `checkIsMutualFollow()` - 相互フォロー確認
    - `checkIsFollowedBy()` - 相手が自分をフォローしているか確認
+   - `getFollowingUsers()` - フォローリスト取得（自分がフォローしているユーザー）
+   - `getFollowerUsers()` - フォロワーリスト取得（自分をフォローしているユーザー）
    - **実装方針**:
      - フォロー数・フォロワー数は誰でも閲覧可能
-     - フォロー・フォロワーリストは非公開（実装しない）
+     - フォローリスト・フォロワーリストは本人のみ閲覧可能（`/followings`, `/followers`）
      - 相互フォロー関係のみバッジで明示的に表示
      - 目的: 作品投稿の心理的ハードルを下げつつ、適度な繋がりを感じられるようにする
    - **フォローボタン** (`src/components/follow-button.tsx`)
      - フォロー後にリアルタイムで相互フォローバッジを表示
      - 自分のプロフィールでは非表示
      - 未ログイン時は無効化
+   - **リスト取得の仕組み**:
+     - 2段階クエリでデータ取得（`follows`テーブルと`usernames`テーブルを直接結合できないため）
+     - フォローリスト: `follower_id = user.id`でフィルタ → `following_id`を取得
+     - フォロワーリスト: `following_id = user.id`でフィルタ → `follower_id`を取得
+     - `usernames`テーブルのカラム名は`screen_name`（`display_name`ではない）
 
 ### Environment Variables
 
@@ -171,9 +180,10 @@ src/
      - `id` (uuid, pk)
      - `user_id` (text, unique) - プロフィールURL用のユーザー名（例: `potato`, `neko`）
      - `auth_user_id` (uuid, unique, fk to auth.users.id) - 認証システムとの紐付け
-     - `email`, `display_name`, `avatar_url`, `biography`
+     - `email`, `screen_name`, `avatar_url`, `biography`
    - ユーザーIDの重複チェックとプロフィール情報の同期に使用
    - `auth_user_id`で`posts.user_id`と紐付けて投稿者情報を取得
+   - **注意**: 表示名のカラム名は`screen_name`（`display_name`ではない）
 
 6. **Database → posts テーブル**
    - スキーマ: `id` (uuid, pk), `user_id` (uuid, fk), `caption` (text), `image_url` (text), `has_image` (boolean), `created_at`, `updated_at`
