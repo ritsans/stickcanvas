@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useTransition } from "react"
-import { followUser, unfollowUser } from "@/lib/supabase/follows"
+import { followUser, unfollowUser, checkIsFollowedBy } from "@/lib/supabase/follows"
 
 type FollowButtonProps = {
   targetAuthUserId: string
@@ -58,7 +58,10 @@ export default function FollowButton({
         } else {
           setIsFollowing(true)
           // フォローした直後に相互フォローかチェック（相手が既に自分をフォローしていれば相互フォローになる）
-          // ただし、この状態は次のレンダリングで正確に反映されるため、楽観的に更新はしない
+          const isFollowedBack = await checkIsFollowedBy(targetAuthUserId)
+          if (isFollowedBack) {
+            setIsMutualFollow(true)
+          }
         }
       }
     })
