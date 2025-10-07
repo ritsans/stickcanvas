@@ -2,6 +2,8 @@ import { notFound } from "next/navigation"
 import Image from "next/image"
 import { createClient } from "@/lib/supabase/server"
 import PostCard from "@/components/post-card"
+import FollowButton from "@/components/follow-button"
+import { getFollowStats, checkIsFollowing } from "@/lib/supabase/follows"
 
 type PageProps = {
   params: Promise<{ username: string }>
@@ -25,6 +27,20 @@ export default async function UserProfilePage({ params }: PageProps) {
   const screenName = profileData.screen_name || profileData.email || "ユーザー"
   const avatarUrl = profileData.avatar_url
   const biography = profileData.biography
+
+  // フォロー統計を取得
+  const { followingCount, followerCount } = await getFollowStats(profileData.id)
+
+  // ログインユーザーを取得
+  const {
+    data: { user: currentUser },
+  } = await supabase.auth.getUser()
+
+  const isOwnProfile = currentUser?.id === profileData.id
+  const isLoggedIn = !!currentUser
+
+  // フォロー状態をチェック
+  const initialIsFollowing = currentUser ? await checkIsFollowing(profileData.id) : false
 
   // このユーザーの投稿を取得
   const { data: posts } = await supabase
@@ -68,8 +84,30 @@ export default async function UserProfilePage({ params }: PageProps) {
         </div>
 
         <div className="flex-1">
-          <h1 className="text-3xl font-bold">{screenName}</h1>
-          <p className="mt-1 text-sm text-gray-600">@{userId}</p>
+          <div className="flex items-start justify-between">
+            <div>
+              <h1 className="text-3xl font-bold">{screenName}</h1>
+              <p className="mt-1 text-sm text-gray-600">@{userId}</p>
+            </div>
+            <FollowButton
+              targetAuthUserId={profileData.id}
+              initialIsFollowing={initialIsFollowing}
+              isOwnProfile={isOwnProfile}
+              isLoggedIn={isLoggedIn}
+            />
+          </div>
+
+          {/* フォロー統計 */}
+          <div className="mt-4 flex gap-6 text-sm">
+            <div>
+              <span className="font-bold">{followingCount}</span>
+              <span className="ml-1 text-gray-600">フォロー中</span>
+            </div>
+            <div>
+              <span className="font-bold">{followerCount}</span>
+              <span className="ml-1 text-gray-600">フォロワー</span>
+            </div>
+          </div>
         </div>
       </div>
 
