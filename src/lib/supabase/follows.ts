@@ -249,3 +249,64 @@ export async function getFollowingUsers() {
       .filter((u) => u !== null),
   }
 }
+
+/**
+ * ログインユーザーのフォロワー（自分をフォローしているユーザー）のリストを取得
+ */
+export async function getFollowerUsers() {
+  const supabase = createClient()
+
+  const {
+    data: { user },
+    error: userError,
+  } = await supabase.auth.getUser()
+
+  if (userError || !user) {
+    return { error: "認証が必要です" }
+  }
+
+  // 自分をフォローしているユーザーのIDリストを取得
+  const { data: followers, error: followersError } = await supabase
+    .from("follows")
+    .select("follower_id, created_at")
+    .eq("following_id", user.id)
+    .order("created_at", { ascending: false })
+
+  if (followersError) {
+    return { error: followersError.message }
+  }
+
+  if (!followers || followers.length === 0) {
+    return { users: [] }
+  }
+
+  // フォロワーの詳細情報を取得
+  const followerIds = followers.map((f) => f.follower_id)
+  const { data: usernamesData, error: usernamesError } = await supabase
+    .from("usernames")
+    .select("id, user_id, screen_name, avatar_url, biography")
+    .in("id", followerIds)
+
+  if (usernamesError) {
+    return { error: usernamesError.message }
+  }
+
+  // フォローされた順にソートするためにマッピング
+  const usersMap = new Map(usernamesData?.map((u) => [u.id, u]) ?? [])
+
+  return {
+    users: followers
+      .map((follower) => {
+        const userData = usersMap.get(follower.follower_id)
+        if (!userData) return null
+        return {
+          authUserId: follower.follower_id,
+          userId: userData.user_id ?? "",
+          displayName: userData.screen_name ?? "",
+          avatarUrl: userData.avatar_url ?? "",
+          biography: userData.biography ?? "",
+        }
+      })
+      .filter((u) => u !== null),
+  }
+}
