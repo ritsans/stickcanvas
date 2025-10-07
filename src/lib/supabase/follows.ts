@@ -188,3 +188,64 @@ export async function checkIsFollowedBy(targetAuthUserId: string) {
 
   return !!data
 }
+
+/**
+ * ログインユーザーがフォローしているユーザーのリストを取得
+ */
+export async function getFollowingUsers() {
+  const supabase = createClient()
+
+  const {
+    data: { user },
+    error: userError,
+  } = await supabase.auth.getUser()
+
+  if (userError || !user) {
+    return { error: "認証が必要です" }
+  }
+
+  // フォローしているユーザーのIDリストを取得
+  const { data: follows, error: followsError } = await supabase
+    .from("follows")
+    .select("following_id, created_at")
+    .eq("follower_id", user.id)
+    .order("created_at", { ascending: false })
+
+  if (followsError) {
+    return { error: followsError.message }
+  }
+
+  if (!follows || follows.length === 0) {
+    return { users: [] }
+  }
+
+  // フォローしているユーザーの詳細情報を取得
+  const followingIds = follows.map((f) => f.following_id)
+  const { data: usernamesData, error: usernamesError } = await supabase
+    .from("usernames")
+    .select("id, user_id, screen_name, avatar_url, biography")
+    .in("id", followingIds)
+
+  if (usernamesError) {
+    return { error: usernamesError.message }
+  }
+
+  // フォロー順にソートするためにマッピング
+  const usersMap = new Map(usernamesData?.map((u) => [u.id, u]) ?? [])
+
+  return {
+    users: follows
+      .map((follow) => {
+        const userData = usersMap.get(follow.following_id)
+        if (!userData) return null
+        return {
+          authUserId: follow.following_id,
+          userId: userData.user_id ?? "",
+          displayName: userData.screen_name ?? "",
+          avatarUrl: userData.avatar_url ?? "",
+          biography: userData.biography ?? "",
+        }
+      })
+      .filter((u) => u !== null),
+  }
+}

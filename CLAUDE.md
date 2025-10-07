@@ -49,13 +49,15 @@ src/
 ├── auth/
 │   └── callback/             # Supabase認証コールバック処理
 ├── components/
-│   └── post-card.tsx         # 投稿表示コンポーネント
+│   ├── post-card.tsx         # 投稿表示コンポーネント
+│   └── follow-button.tsx     # フォローボタンコンポーネント
 └── lib/
     ├── supabase/
     │   ├── client.ts         # ブラウザ用Supabaseクライアント
     │   ├── server.ts         # サーバー用Supabaseクライアント (SSR対応)
     │   ├── auth.ts           # 認証関連のServer Actions
-    │   └── posts.ts          # 投稿関連のServer Actions
+    │   ├── posts.ts          # 投稿関連のServer Actions
+    │   └── follows.ts        # フォロー関連のServer Actions
     └── validations/
         ├── auth.ts           # Zod検証スキーマ（認証フォーム用）
         └── post.ts           # Zod検証スキーマ（投稿フォーム用）
@@ -118,6 +120,23 @@ src/
    - 各投稿にユーザー名・アバター・投稿日時を表示
    - ユーザー名クリックで`/[username]`へ遷移
 
+8. **フォロー機能** (`src/lib/supabase/follows.ts`)
+   - `followUser()` - フォロー
+   - `unfollowUser()` - アンフォロー
+   - `getFollowStats()` - フォロー数・フォロワー数取得
+   - `checkIsFollowing()` - フォロー状態確認
+   - `checkIsMutualFollow()` - 相互フォロー確認
+   - `checkIsFollowedBy()` - 相手が自分をフォローしているか確認
+   - **実装方針**:
+     - フォロー数・フォロワー数は誰でも閲覧可能
+     - フォロー・フォロワーリストは非公開（実装しない）
+     - 相互フォロー関係のみバッジで明示的に表示
+     - 目的: 作品投稿の心理的ハードルを下げつつ、適度な繋がりを感じられるようにする
+   - **フォローボタン** (`src/components/follow-button.tsx`)
+     - フォロー後にリアルタイムで相互フォローバッジを表示
+     - 自分のプロフィールでは非表示
+     - 未ログイン時は無効化
+
 ### Environment Variables
 
 必須の環境変数（`.env.local`に設定）:
@@ -160,6 +179,14 @@ src/
    - スキーマ: `id` (uuid, pk), `user_id` (uuid, fk), `caption` (text), `image_url` (text), `has_image` (boolean), `created_at`, `updated_at`
    - RLSポリシー: 自分の投稿は全操作可能、全ユーザーが閲覧可能
    - マイグレーションファイル: `supabase/migrations/create_posts_table.sql`
+
+7. **Database → follows テーブル**
+   - スキーマ: `id` (uuid, pk), `follower_id` (uuid, fk to auth.users.id), `following_id` (uuid, fk to auth.users.id), `created_at`
+   - ユニーク制約: `(follower_id, following_id)`
+   - CHECK制約: `follower_id != following_id`（自己フォロー禁止）
+   - インデックス: `follower_id`, `following_id`
+   - RLSポリシー: 誰でも閲覧可能、ログインユーザーは自分のフォロー/アンフォロー操作が可能
+   - マイグレーションファイル: `supabase/migrations/create_follows_table.sql`
 
 ### TypeScript Configuration
 
@@ -214,3 +241,7 @@ src/
    - `usernames.auth_user_id` (UUID) → `auth.users.id`を参照
    - タイムライン表示時は`posts.user_id`と`usernames.auth_user_id`で結合
    - `usernames.user_id` (TEXT)はプロフィールURL用（例: `/potato`）
+
+7. **Next.js 15対応**
+   - 動的ルートの`params`は`Promise`型
+   - 使用前に必ず`await`すること（例: `const { username } = await params`）
