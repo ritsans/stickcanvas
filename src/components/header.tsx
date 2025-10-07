@@ -1,0 +1,54 @@
+import Link from "next/link"
+import { createClient } from "@/lib/supabase/server"
+
+export async function Header() {
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
+  return (
+    <header className="border-b bg-white">
+      <div className="container mx-auto px-4 py-4">
+        <div className="flex items-center justify-between">
+          <Link href="/" className="text-2xl font-bold">
+            StickCanvas
+          </Link>
+
+          <nav className="flex items-center gap-6">
+            {user ? (
+              <>
+                <Link href="/" className="hover:text-gray-600">
+                  ホーム
+                </Link>
+                <Link href="/dashboard" className="hover:text-gray-600">
+                  投稿
+                </Link>
+                <Link href="/profile" className="hover:text-gray-600">
+                  プロフィール
+                </Link>
+                <form action="/api/auth/signout" method="post">
+                  <button
+                    type="submit"
+                    className="px-4 py-2 bg-gray-800 text-white rounded-md hover:bg-gray-700 transition-colors"
+                  >
+                    ログアウト
+                  </button>
+                </form>
+              </>
+            ) : (
+              <>
+                <Link href="/login" className="hover:text-gray-600">
+                  ログイン
+                </Link>
+                <Link href="/signup" className="hover:text-gray-600">
+                  サインアップ
+                </Link>
+              </>
+            )}
+          </nav>
+        </div>
+      </div>
+    </header>
+  )
+}
