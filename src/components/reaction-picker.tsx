@@ -75,11 +75,7 @@ export default function ReactionPicker({
           hasUserReacted
             ? "border-blue-500 bg-blue-50 text-blue-600"
             : "border-gray-300 bg-white text-gray-700 hover:bg-gray-50"
-        } ${
-          !isAuthenticated || isPending
-            ? "cursor-not-allowed opacity-50"
-            : "cursor-pointer"
-        }`}
+        } ${!isAuthenticated || isPending ? "cursor-not-allowed opacity-50" : "cursor-pointer"}`}
         aria-label={hasUserReacted ? "拍手を取り消す" : "拍手する"}
       >
         <Image
