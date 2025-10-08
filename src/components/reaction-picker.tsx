@@ -71,7 +71,7 @@ export default function ReactionPicker({
       <button
         onClick={handleReactionClick}
         disabled={!isAuthenticated || isPending}
-        className={`flex items-center gap-1 rounded-full border px-3 py-1 text-sm transition-colors ${
+        className={`group flex items-center gap-1 rounded-full border px-3 py-1 text-sm transition-colors ${
           hasUserReacted
             ? "border-blue-500 bg-blue-50 text-blue-600"
             : "border-gray-300 bg-white text-gray-700 hover:bg-gray-50"
@@ -87,7 +87,7 @@ export default function ReactionPicker({
           alt={CLAP_EMOJI}
           width={20}
           height={20}
-          className="inline-block"
+          className="inline-block transition-transform duration-200 group-hover:scale-125"
         />
         {clapCount > 0 && <span className="font-medium">{clapCount}</span>}
       </button>
