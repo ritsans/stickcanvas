@@ -13,35 +13,6 @@ export default async function HomePage() {
 
   return (
     <main className="min-h-screen bg-gray-50">
-      {/* ヘッダー */}
-      <header className="sticky top-0 z-10 border-b border-gray-200 bg-white">
-        <div className="mx-auto flex max-w-2xl items-center justify-between px-4 py-3">
-          <h1 className="text-xl font-bold">StickCanvas</h1>
-          <div className="flex gap-3">
-            {user ? (
-              <Link
-                href="/dashboard"
-                className="rounded bg-black px-4 py-2 text-sm text-white"
-              >
-                ダッシュボード
-              </Link>
-            ) : (
-              <>
-                <Link
-                  href="/login"
-                  className="rounded bg-black px-4 py-2 text-sm text-white"
-                >
-                  ログイン
-                </Link>
-                <Link href="/signup" className="rounded border px-4 py-2 text-sm">
-                  新規登録
-                </Link>
-              </>
-            )}
-          </div>
-        </div>
-      </header>
-
       {/* タイムライン */}
       <div className="mx-auto max-w-2xl px-4 py-8">
         {posts.length === 0 ? (
