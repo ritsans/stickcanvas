@@ -1,7 +1,9 @@
 "use client"
 
 import { useState, useTransition } from "react"
+import Image from "next/image"
 import { addReaction, removeReaction } from "@/lib/supabase/reactions"
+import { getTwemojiUrl } from "@/lib/twemoji"
 
 type ReactionPickerProps = {
   postId: string
@@ -80,7 +82,13 @@ export default function ReactionPicker({
         }`}
         aria-label={hasUserReacted ? "拍手を取り消す" : "拍手する"}
       >
-        <span className="text-base">{CLAP_EMOJI}</span>
+        <Image
+          src={getTwemojiUrl(CLAP_EMOJI)}
+          alt={CLAP_EMOJI}
+          width={20}
+          height={20}
+          className="inline-block"
+        />
         {clapCount > 0 && <span className="font-medium">{clapCount}</span>}
       </button>
     </div>
