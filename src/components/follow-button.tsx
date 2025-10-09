@@ -67,20 +67,13 @@ export default function FollowButton({
 
   return (
     <div className="flex flex-col gap-2">
-      <div className="flex items-center gap-2">
-        <Button
-          onClick={handleToggleFollow}
-          disabled={isPending}
-          variant={isFollowing ? "outline" : "default"}
-        >
-          {isPending ? "処理中..." : isFollowing ? "フォロー中" : "フォロー"}
-        </Button>
-        {isMutualFollow && (
-          <span className="rounded-full bg-green-100 px-3 py-1 text-xs font-medium text-green-700">
-            相互フォロー
-          </span>
-        )}
-      </div>
+      <Button
+        onClick={handleToggleFollow}
+        disabled={isPending}
+        variant={isFollowing ? "outline" : "default"}
+      >
+        {isPending ? "処理中..." : isFollowing ? "フォロー中" : "フォロー"}
+      </Button>
       {error && <p className="text-sm text-red-600">{error}</p>}
     </div>
   )
