@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react"
 import { followUser, unfollowUser, checkIsFollowedBy } from "@/lib/supabase/follows"
+import { Button } from "@/components/ui/button"
 
 type FollowButtonProps = {
   targetAuthUserId: string
@@ -31,12 +32,9 @@ export default function FollowButton({
   // ログインしていない場合はボタンを無効化
   if (!isLoggedIn) {
     return (
-      <button
-        disabled
-        className="rounded-lg bg-gray-300 px-6 py-2 text-sm font-semibold text-gray-500 cursor-not-allowed"
-      >
+      <Button disabled variant="secondary" className="cursor-not-allowed">
         フォロー
-      </button>
+      </Button>
     )
   }
 
@@ -70,17 +68,13 @@ export default function FollowButton({
   return (
     <div className="flex flex-col gap-2">
       <div className="flex items-center gap-2">
-        <button
+        <Button
           onClick={handleToggleFollow}
           disabled={isPending}
-          className={`rounded-lg px-6 py-2 text-sm font-semibold transition-colors ${
-            isFollowing
-              ? "border border-gray-300 bg-white text-gray-700 hover:bg-gray-50"
-              : "bg-blue-600 text-white hover:bg-blue-700"
-          } disabled:opacity-50 disabled:cursor-not-allowed`}
+          variant={isFollowing ? "outline" : "default"}
         >
           {isPending ? "処理中..." : isFollowing ? "フォロー中" : "フォロー"}
-        </button>
+        </Button>
         {isMutualFollow && (
           <span className="rounded-full bg-green-100 px-3 py-1 text-xs font-medium text-green-700">
             相互フォロー

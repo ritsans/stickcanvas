@@ -6,6 +6,7 @@ import Link from "next/link";
 import { signIn } from "@/lib/supabase/auth";
 import { signInSchema } from "@/lib/validations/auth";
 import { z } from "zod";
+import { Button } from "@/components/ui/button";
 
 type FormState = {
   error?: string;
@@ -16,13 +17,9 @@ const initialState: FormState = {};
 function SubmitButton() {
   const { pending } = useFormStatus();
   return (
-    <button
-      type="submit"
-      className="w-full rounded bg-black px-4 py-2 text-white disabled:opacity-60"
-      disabled={pending}
-    >
+    <Button type="submit" className="w-full" disabled={pending}>
       {pending ? "サインイン中..." : "ログイン"}
-    </button>
+    </Button>
   );
 }
 

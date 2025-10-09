@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Next.js 15アプリケーション（App Router使用）。Supabase認証を統合したWebアプリケーション。Turbopackを使用して開発・ビルドを高速化。
+Next.js 15アプリケーション（App Router使用）。Supabase認証を統合したWebアプリケーション。Turbopackを使用して開発・ビルドを高速化。UIコンポーネントはshadcn/uiを使用。
 
 - 現在、**フロントエンドプログラム学習目的** でプロジェクトを進めています。基本的な動きが完成した後にアプリケーション開発に取り組みます。
 
@@ -51,9 +51,11 @@ src/
 ├── auth/
 │   └── callback/             # Supabase認証コールバック処理
 ├── components/
+│   ├── ui/                   # shadcn/uiコンポーネント
 │   ├── post-card.tsx         # 投稿表示コンポーネント
 │   └── follow-button.tsx     # フォローボタンコンポーネント
 └── lib/
+    ├── utils.ts              # shadcn/ui用ユーティリティ関数（cn関数など）
     ├── supabase/
     │   ├── client.ts         # ブラウザ用Supabaseクライアント
     │   ├── server.ts         # サーバー用Supabaseクライアント (SSR対応)
@@ -255,3 +257,9 @@ src/
 7. **Next.js 15対応**
    - 動的ルートの`params`は`Promise`型
    - 使用前に必ず`await`すること（例: `const { username } = await params`）
+
+8. **shadcn/ui使用**
+   - `components/ui/`配下にshadcn/uiコンポーネントを配置
+   - `lib/utils.ts`に`cn`関数（clsxとtailwind-mergeを組み合わせたクラス名結合関数）を定義
+   - Tailwind CSSベースのコンポーネントライブラリ
+   - 必要に応じて`pnpm dlx shadcn@latest add <component-name>`でコンポーネントを追加

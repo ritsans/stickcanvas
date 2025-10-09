@@ -4,6 +4,7 @@ import { useActionState, useState } from "react"
 import { updateAllProfile } from "@/lib/supabase/auth"
 import type { User } from "@supabase/supabase-js"
 import Image from "next/image"
+import { Button } from "@/components/ui/button"
 
 export default function ProfileForm({ user, userId }: { user: User; userId: string | null }) {
   const [formState, formAction, formPending] = useActionState(updateAllProfile, null)
@@ -167,13 +168,9 @@ export default function ProfileForm({ user, userId }: { user: User; userId: stri
       )}
 
       <div className="flex justify-end">
-        <button
-          type="submit"
-          disabled={formPending}
-          className="rounded bg-black px-6 py-2 text-sm text-white transition-colors hover:bg-gray-800 disabled:opacity-50"
-        >
+        <Button type="submit" disabled={formPending}>
           {formPending ? "保存中..." : "プロフィールを保存"}
-        </button>
+        </Button>
       </div>
     </form>
   )

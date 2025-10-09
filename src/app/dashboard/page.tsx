@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/server"
 import { signOut } from "@/lib/supabase/auth"
 import PostForm from "./post-form"
 import PostCard from "@/components/post-card"
+import { Button } from "@/components/ui/button"
 
 export default async function DashbordPage() {
   const supabase = createClient()
@@ -75,21 +76,13 @@ export default async function DashbordPage() {
           </div>
         </div>
 
-        <Link
-          href="/profile"
-          className="rounded border border-gray-300 px-3 py-1.5 text-sm hover:bg-gray-50"
-        >
-          プロフィール編集
-        </Link>
+        <Button asChild variant="outline" size="sm">
+          <Link href="/profile">プロフィール編集</Link>
+        </Button>
       </header>
 
       <form action={signOut}>
-        <button
-          type="submit"
-          className="rounded bg-black px-4 py-2 text-sm text-white"
-        >
-          ログアウト
-        </button>
+        <Button type="submit">ログアウト</Button>
       </form>
 
       {/* 投稿フォーム */}

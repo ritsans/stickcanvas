@@ -1,5 +1,6 @@
 import Link from "next/link"
 import { createClient } from "@/lib/supabase/server"
+import { Button } from "@/components/ui/button"
 
 export async function Header() {
   const supabase = await createClient()
@@ -28,12 +29,9 @@ export async function Header() {
                   プロフィール
                 </Link>
                 <form action="/api/auth/signout" method="post">
-                  <button
-                    type="submit"
-                    className="px-4 py-2 bg-gray-800 text-white rounded-md hover:bg-gray-700 transition-colors"
-                  >
+                  <Button type="submit" size="sm">
                     ログアウト
-                  </button>
+                  </Button>
                 </form>
               </>
             ) : (

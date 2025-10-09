@@ -3,6 +3,7 @@
 import { useActionState, useState } from "react"
 import { createPost } from "@/lib/supabase/posts"
 import Image from "next/image"
+import { Button } from "@/components/ui/button"
 
 export default function PostForm() {
   const [formState, formAction, formPending] = useActionState(createPost, null)
@@ -119,13 +120,9 @@ export default function PostForm() {
 
       {/* 投稿ボタン */}
       <div className="flex justify-end">
-        <button
-          type="submit"
-          disabled={formPending}
-          className="rounded bg-black px-6 py-2 text-sm text-white transition-colors hover:bg-gray-800 disabled:opacity-50"
-        >
+        <Button type="submit" disabled={formPending}>
           {formPending ? "投稿中..." : "投稿する"}
-        </button>
+        </Button>
       </div>
     </form>
   )

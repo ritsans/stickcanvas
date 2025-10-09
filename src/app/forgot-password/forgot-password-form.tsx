@@ -6,6 +6,7 @@ import Link from "next/link"
 import { requestPasswordReset } from "@/lib/supabase/auth"
 import { forgotPasswordSchema } from "@/lib/validations/auth"
 import { z } from "zod"
+import { Button } from "@/components/ui/button"
 
 type FormState = {
   error?: string
@@ -16,13 +17,9 @@ const initialState: FormState = {}
 function SubmitButton() {
   const { pending } = useFormStatus()
   return (
-    <button
-      type="submit"
-      className="w-full rounded bg-black px-4 py-2 text-white disabled:opacity-60"
-      disabled={pending}
-    >
+    <Button type="submit" className="w-full" disabled={pending}>
       {pending ? "送信中..." : "リセットリンクを送信"}
-    </button>
+    </Button>
   )
 }
 
