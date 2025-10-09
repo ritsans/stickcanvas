@@ -3,7 +3,6 @@ import Link from "next/link"
 import Image from "next/image"
 import { createClient } from "@/lib/supabase/server"
 import { signOut } from "@/lib/supabase/auth"
-import PostForm from "./post-form"
 import PostCard from "@/components/post-card"
 import { Button } from "@/components/ui/button"
 
@@ -84,9 +83,6 @@ export default async function DashbordPage() {
       <form action={signOut}>
         <Button type="submit">ログアウト</Button>
       </form>
-
-      {/* 投稿フォーム */}
-      <PostForm />
 
       {/* 投稿一覧 */}
       <section className="space-y-6">

@@ -8,6 +8,16 @@ export async function Header() {
     data: { user },
   } = await supabase.auth.getUser()
 
+  let username = null
+  if (user) {
+    const { data: usernameData } = await supabase
+      .from("usernames")
+      .select("*")
+      .eq("auth_user_id", user.id)
+      .single()
+    username = usernameData?.user_id
+  }
+
   return (
     <header className="border-b bg-white">
       <div className="container mx-auto px-4 py-4">
@@ -25,9 +35,11 @@ export async function Header() {
                 <Link href="/dashboard" className="hover:text-gray-600">
                   投稿
                 </Link>
-                <Link href="/profile" className="hover:text-gray-600">
-                  プロフィール
-                </Link>
+                {username && (
+                  <Link href={`/${username}`} className="hover:text-gray-600">
+                    プロフィール
+                  </Link>
+                )}
                 <form action="/api/auth/signout" method="post">
                   <Button type="submit" size="sm">
                     ログアウト
