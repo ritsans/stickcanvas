@@ -66,13 +66,7 @@ export default async function UserProfilePage({ params }: PageProps) {
         {/* アバター画像 */}
         <div className="relative h-24 w-24 flex-shrink-0 overflow-hidden rounded-full bg-gray-200">
           {avatarUrl ? (
-            <Image
-              src={avatarUrl}
-              alt={screenName}
-              fill
-              sizes="96px"
-              className="object-cover"
-            />
+            <Image src={avatarUrl} alt={screenName} fill sizes="96px" className="object-cover" />
           ) : (
             <div className="flex h-full w-full items-center justify-center text-gray-400">
               <svg className="h-12 w-12" fill="currentColor" viewBox="0 0 20 20">
@@ -112,6 +106,12 @@ export default async function UserProfilePage({ params }: PageProps) {
               <span className="ml-1 text-gray-600">フォロワー</span>
             </div>
           </div>
+
+          {initialIsMutualFollow && (
+            <div className="mt-2 inline-flex items-center rounded-full bg-green-100 px-3 py-1 text-xs font-medium text-green-700">
+              相互フォロー
+            </div>
+          )}
         </div>
       </div>
 
