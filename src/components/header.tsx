@@ -15,6 +15,7 @@ export async function Header() {
   } = await supabase.auth.getUser()
 
   let username = null
+  let screenName = null
   if (user) {
     const { data: usernameData } = await supabase
       .from("usernames")
@@ -22,6 +23,7 @@ export async function Header() {
       .eq("auth_user_id", user.id)
       .single()
     username = usernameData?.user_id
+    screenName = usernameData?.screen_name
   }
 
   return (
@@ -41,9 +43,10 @@ export async function Header() {
                 <Link href="/dashboard" className="hover:text-gray-600">
                   投稿
                 </Link>
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <button className="relative h-10 w-10 overflow-hidden rounded-full bg-gray-200 hover:opacity-80 transition-opacity">
+                <div className="flex items-center gap-3">
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <button className="relative h-10 w-10 overflow-hidden rounded-full bg-gray-200 hover:opacity-80 transition-opacity">
                       {user.user_metadata?.avatar_url ? (
                         <Image
                           src={user.user_metadata.avatar_url}
@@ -63,9 +66,9 @@ export async function Header() {
                           </svg>
                         </div>
                       )}
-                    </button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
+                      </button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
                     <DropdownMenuItem asChild>
                       {username && (
                         <DropdownMenuItem asChild>
@@ -92,8 +95,17 @@ export async function Header() {
                         ログアウト
                       </Link>
                     </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                  {username && (
+                    <div className="flex flex-col">
+                      <span className="text-sm font-semibold text-gray-900 leading-tight">
+                        {screenName || "名前未設定"}
+                      </span>
+                      <span className="text-xs text-gray-500 leading-tight">@{username}</span>
+                    </div>
+                  )}
+                </div>
               </>
             ) : (
               <>

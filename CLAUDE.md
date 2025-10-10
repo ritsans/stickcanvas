@@ -263,3 +263,5 @@ src/
    - `lib/utils.ts`に`cn`関数（clsxとtailwind-mergeを組み合わせたクラス名結合関数）を定義
    - Tailwind CSSベースのコンポーネントライブラリ
    - 必要に応じて`pnpm dlx shadcn@latest add <component-name>`でコンポーネントを追加
+
+- `const supabase = await createClient()` と書く傾向がありますが、`await` は必要ありません
