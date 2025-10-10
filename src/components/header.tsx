@@ -1,6 +1,12 @@
 import Link from "next/link"
+import Image from "next/image"
 import { createClient } from "@/lib/supabase/server"
-import { Button } from "@/components/ui/button"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 
 export async function Header() {
   const supabase = await createClient()
@@ -35,16 +41,59 @@ export async function Header() {
                 <Link href="/dashboard" className="hover:text-gray-600">
                   投稿
                 </Link>
-                {username && (
-                  <Link href={`/${username}`} className="hover:text-gray-600">
-                    プロフィール
-                  </Link>
-                )}
-                <form action="/api/auth/signout" method="post">
-                  <Button type="submit" size="sm">
-                    ログアウト
-                  </Button>
-                </form>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <button className="relative h-10 w-10 overflow-hidden rounded-full bg-gray-200 hover:opacity-80 transition-opacity">
+                      {user.user_metadata?.avatar_url ? (
+                        <Image
+                          src={user.user_metadata.avatar_url}
+                          alt="アバター"
+                          fill
+                          sizes="40px"
+                          className="object-cover"
+                        />
+                      ) : (
+                        <div className="flex h-full w-full items-center justify-center text-gray-400">
+                          <svg className="h-6 w-6" fill="currentColor" viewBox="0 0 20 20">
+                            <path
+                              fillRule="evenodd"
+                              d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z"
+                              clipRule="evenodd"
+                            />
+                          </svg>
+                        </div>
+                      )}
+                    </button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem asChild>
+                      {username && (
+                        <DropdownMenuItem asChild>
+                          <Link href={`/${username}`} className="cursor-pointer">
+                            プロフィール
+                          </Link>
+                        </DropdownMenuItem>
+                      )}
+                    </DropdownMenuItem>
+
+                    <DropdownMenuItem asChild>
+                      <Link href="/dashboard" className="cursor-pointer">
+                        ダッシュボード
+                      </Link>
+                    </DropdownMenuItem>
+
+                    <DropdownMenuItem asChild>
+                      <Link href="/profile" className="cursor-pointer">
+                        プロフィール編集
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link href="/api/auth/signout" className="cursor-pointer">
+                        ログアウト
+                      </Link>
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </>
             ) : (
               <>
