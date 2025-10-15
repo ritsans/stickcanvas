@@ -1,5 +1,8 @@
 import Image from "next/image"
 import Link from "next/link"
+import ReactionPicker from "./reaction-picker"
+import { getPostReactions, getUserReaction } from "@/lib/supabase/reactions"
+import { createClient } from "@/lib/supabase/server"
 
 type PostCardProps = {
   post: {
@@ -17,7 +20,17 @@ type PostCardProps = {
   }
 }
 
-export default function PostCard({ post, author }: PostCardProps) {
+export default async function PostCard({ post, author }: PostCardProps) {
+  // リアクションデータを取得
+  const reactions = await getPostReactions(post.id)
+  const userReaction = await getUserReaction(post.id)
+
+  // 認証状態を確認
+  const supabase = createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  const isAuthenticated = !!user
   const screenName = author.screen_name || author.email || "ユーザー"
   const avatarUrl = author.avatar_url
   const imageUrl = post.has_image && post.image_url ? post.image_url : "/placeholder.png"
@@ -81,9 +94,19 @@ export default function PostCard({ post, author }: PostCardProps) {
         />
       </div>
 
+      {/* リアクション */}
+      <div className="border-t border-gray-200 p-4">
+        <ReactionPicker
+          postId={post.id}
+          initialReactions={reactions}
+          userReaction={userReaction}
+          isAuthenticated={isAuthenticated}
+        />
+      </div>
+
       {/* キャプション */}
       {post.caption && (
-        <div className="p-4">
+        <div className="px-4 pb-4">
           <p className="whitespace-pre-wrap text-sm">{post.caption}</p>
         </div>
       )}
