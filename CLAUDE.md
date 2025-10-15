@@ -125,3 +125,46 @@ src/
    - Client Component → `@/lib/supabase/client`
    - Server Component/API → `@/lib/supabase/server`
    - 毎回新しいクライアントインスタンスを作成（特にサーバー側）
+<<<<<<< Updated upstream
+=======
+
+3. **バリデーション**
+   - Zodスキーマで入力検証
+   - 認証フォーム（`src/lib/validations/auth.ts`）
+     - メールアドレス: `.pipe(z.email())`でチェーン検証
+     - パスワード: 8文字以上
+     - ユーザーID: 3〜20文字、半角英数字+アンダースコア（`/^[a-z0-9_]{3,20}$/`）
+   - 投稿フォーム（`src/lib/validations/post.ts`）
+     - キャプション: 最大2000文字
+
+4. **画像アップロード**
+   - FormDataから`File`オブジェクト取得
+   - サイズ・形式チェック後、Supabase Storageにアップロード
+   - 古いファイルは`remove()`で削除してから新規アップロード
+   - パブリックURLを取得して`user_metadata`に保存
+
+5. **データ同期**
+   - ユーザープロフィール情報は`auth.users.user_metadata`と`usernames`テーブル両方に保存
+   - `updateAllProfile()`で一括更新、両者を同期
+   - ユーザーID変更時は旧URLと新URLの両方で`revalidatePath()`を実行
+
+6. **投稿とユーザー情報の紐付け**
+   - `posts.user_id` (UUID) → `auth.users.id`を参照
+   - `usernames.auth_user_id` (UUID) → `auth.users.id`を参照
+   - タイムライン表示時は`posts.user_id`と`usernames.auth_user_id`で結合
+   - `usernames.user_id` (TEXT)はプロフィールURL用（例: `/potato`）
+
+7. **Next.js 15対応**
+   - 動的ルートの`params`は`Promise`型
+   - 使用前に必ず`await`すること（例: `const { username } = await params`）
+
+8. **shadcn/ui使用**
+   - `components/ui/`配下にshadcn/uiコンポーネントを配置
+   - `lib/utils.ts`に`cn`関数（clsxとtailwind-mergeを組み合わせたクラス名結合関数）を定義
+   - Tailwind CSSベースのコンポーネントライブラリ
+   - 新しいshadcn/uiコンポーネントを使用する際は、コード・import文だけでなく、`pnpm dlx shadcn@latest add <component-name>`でコンポーネントを追加するコマンドを実行する
+   - `@/components/ui/` へのimportがある場合は、該当ファイルの存在を前提にしないこと
+   - import文やコードは正常でもインストール漏れによる `Module not found` エラーを防ぐため、導入手順を省略しないこと
+
+- `const supabase = await createClient()` と書く傾向がありますが、`await` は必要ありません
+>>>>>>> Stashed changes

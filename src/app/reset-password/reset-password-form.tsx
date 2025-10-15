@@ -4,7 +4,12 @@ import { useActionState, useState } from "react"
 import { useFormStatus } from "react-dom"
 import { resetPassword } from "@/lib/supabase/auth"
 import { resetPasswordSchema } from "@/lib/validations/auth"
+<<<<<<< Updated upstream
 import { z } from "zod"
+=======
+import { z } from "@/lib/zod"
+import { Button } from "@/components/ui/button"
+>>>>>>> Stashed changes
 
 type FormState = {
   error?: string

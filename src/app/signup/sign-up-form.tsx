@@ -5,7 +5,12 @@ import { useFormStatus } from "react-dom";
 import Link from "next/link";
 import { signUp } from "@/lib/supabase/auth";
 import { signUpSchema } from "@/lib/validations/auth";
+<<<<<<< Updated upstream
 import { z } from "zod";
+=======
+import { z } from "@/lib/zod";
+import { Button } from "@/components/ui/button";
+>>>>>>> Stashed changes
 
 type FormState = {
   error?: string;
